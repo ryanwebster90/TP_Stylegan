@@ -225,7 +225,8 @@ class ModulatedConv2d(nn.Module):
         batch, in_channel, height, width = input.shape
 
         style = self.modulation(style).view(batch, 1, in_channel, 1, 1)
-        weight = self.scale * self.weight * style
+        weight = self.scale * self.weight
+        weight = 0 # Exercise 1: your code here.
 
         if self.demodulate:
             demod = torch.rsqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
@@ -452,7 +453,7 @@ class Generator(nn.Module):
         latent_in = torch.randn(
             n_latent, self.style_dim, device=self.input.input.device
         )
-        latent = self.style(latent_in).mean(0, keepdim=True)
+        latent = 0 # Exercise 4: your code here, compute z_m
 
         return latent
 
@@ -485,18 +486,16 @@ class Generator(nn.Module):
             style_t = []
 
             for style in styles:
-                style_t.append(
-                    truncation_latent + truncation * (style - truncation_latent)
-                )
-
+                # Exercise 4: Compute the truncated latent
+                style_t=0
             styles = style_t
 
         if len(styles) < 2:
             inject_index = self.n_latent
 
             if styles[0].ndim < 3:
-                latent = styles[0].unsqueeze(1).repeat(1, inject_index, 1)
-
+                #Exercise 3: your code here (repeat the latent code self.n_latent times)
+                latent = 0
             else:
                 latent = styles[0]
 
@@ -515,16 +514,9 @@ class Generator(nn.Module):
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
-        for conv1, conv2, noise1, noise2, to_rgb in zip(
-            self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
-        ):
-            out = conv1(out, latent[:, i], noise=noise1)
-            out = conv2(out, latent[:, i + 1], noise=noise2)
-            skip = to_rgb(out, latent[:, i + 2], skip)
-
-            i += 2
-
-        image = skip
+        #Exercise 3: Your code here. Sequentially compute the forward pass
+        # (HINT: it will be similar to the above three lines for the first convolution, 
+        # for each upsampling modulated conv)
 
         if return_latents:
             return image, latent
